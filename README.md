@@ -22,10 +22,16 @@ The grypto library and CLI were build only to demonstrate and understand the bas
 
 You can try out grypto by downloading the CLI:
 ```
-go get -u github.com/timebertt/grypto
+go get -u github.com/timebertt/grypto/grypto
 ```
 
 Have fun! :tada:
+
+## Algorithms implemented :gear:
+
+- [Caesar Cipher](/caesar) (CLI integration missing)
+
+More to come! :rocket:
 
 ## References :books:
 
