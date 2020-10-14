@@ -1,16 +1,16 @@
 package caesar
 
 import (
-  "crypto/cipher"
+	"crypto/cipher"
 )
 
 const (
-  BlockSize = 1
+	BlockSize = 1
 
-  minUpper, maxUpper = 'A', 'Z'
-  minLower, maxLower = 'a', 'z'
+	minUpper, maxUpper = 'A', 'Z'
+	minLower, maxLower = 'a', 'z'
 
-  modulus = 26
+	modulus = 26
 )
 
 type caesar int
@@ -22,52 +22,52 @@ type caesar int
 // replaced.
 // see https://en.wikipedia.org/wiki/Caesar_cipher
 func NewCipher(key int) cipher.Block {
-  // avoid overflow
-  return caesar(key % modulus)
+	// avoid overflow
+	return caesar(key % modulus)
 }
 
 func (c caesar) BlockSize() int {
-  return BlockSize
+	return BlockSize
 }
 
 func (c caesar) Encrypt(dst, src []byte) {
-  encryptBlock(int(c), dst, src)
+	encryptBlock(int(c), dst, src)
 }
 
 func (c caesar) Decrypt(dst, src []byte) {
-  encryptBlock(-int(c), dst, src)
+	encryptBlock(-int(c), dst, src)
 }
 
 func encryptBlock(key int, dst, src []byte) {
-  if len(src) < BlockSize {
-    panic("grypto/caesar: input not full block")
-  }
-  if len(dst) < BlockSize {
-    panic("grypto/caesar: output not full block")
-  }
+	if len(src) < BlockSize {
+		panic("grypto/caesar: input not full block")
+	}
+	if len(dst) < BlockSize {
+		panic("grypto/caesar: output not full block")
+	}
 
-  // modulo operation does not return a positive residue for a negative number
-  if key < 0 {
-    key += modulus
-  }
+	// modulo operation does not return a positive residue for a negative number
+	if key < 0 {
+		key += modulus
+	}
 
-  // convert to rune for easy comparing
-  in := rune(src[0])
+	// convert to rune for easy comparing
+	in := rune(src[0])
 
-  switch {
-  case key == 0:
-    fallthrough
-  default:
-    dst[0] = src[0]
-  case in >= minUpper && in <= maxUpper:
-    dst[0] = byte(substitute(key, in, minUpper))
-  case in >= minLower && in <= maxLower:
-    dst[0] = byte(substitute(key, in, minLower))
-  }
+	switch {
+	case key == 0:
+		fallthrough
+	default:
+		dst[0] = src[0]
+	case in >= minUpper && in <= maxUpper:
+		dst[0] = byte(substitute(key, in, minUpper))
+	case in >= minLower && in <= maxLower:
+		dst[0] = byte(substitute(key, in, minLower))
+	}
 
-  return
+	return
 }
 
 func substitute(key int, in, min rune) rune {
-  return min + rune((int(in-min)+key)%modulus)
+	return min + rune((int(in-min)+key)%modulus)
 }
