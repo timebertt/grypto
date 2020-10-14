@@ -18,9 +18,11 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+
+	"github.com/timebertt/grypto/grypto/cmd/caesar"
 )
 
-func NewCryptoCommand() *cobra.Command {
+func NewGryptoCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "grypto",
 		Short: "A collection of cryptographic algorithms implemented in go",
@@ -40,6 +42,10 @@ with proper implementations of the different algorithms and might be vulnerable 
 the respective official implementations of the Go standard library (see https://golang.org/pkg/crypto/)
 for writing secure Go applications.`,
 	}
+
+	cmd.AddCommand(
+		caesar.NewCommand(),
+	)
 
 	return cmd
 }

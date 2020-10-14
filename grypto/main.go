@@ -24,7 +24,7 @@ import (
 )
 
 func main() {
-	if err := cmd.NewCryptoCommand().Execute(); err != nil {
+	if err := cmd.NewGryptoCommand().Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
