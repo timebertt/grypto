@@ -1,3 +1,17 @@
+# ==========================
+# binary
+# ==========================
+.PHONY: build
+build:
+	@GO111MOD=on go build -o bin/grypto ./grypto
+
+.PHONY: install
+install:
+	@GO111MOD=on go install ./grypto
+
+# ==========================
+# verification
+# ==========================
 .PHONY: format
 format:
 	@goimports -w -l .
