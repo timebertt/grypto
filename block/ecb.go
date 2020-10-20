@@ -1,4 +1,4 @@
-package ecb
+package block
 
 import "crypto/cipher"
 

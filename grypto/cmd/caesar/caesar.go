@@ -5,13 +5,14 @@ import (
 	"crypto/cipher"
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
 
+	"github.com/timebertt/grypto/block"
 	"github.com/timebertt/grypto/caesar"
-	"github.com/timebertt/grypto/ecb"
 	"github.com/timebertt/grypto/grypto/options"
 )
 
@@ -69,24 +70,9 @@ See: https://en.wikipedia.org/wiki/Caesar_cipher`,
 		},
 	}
 
-	cmd.AddCommand(
-		&cobra.Command{
-			Use:   "encrypt",
-			Short: "encrypt plaintext using "+CipherName,
-			Args:  cobra.MaximumNArgs(1),
-			RunE: func(cmd *cobra.Command, args []string) error {
-				return runCaesar(options.Encrypt, parsedKey, input.In)
-			},
-		},
-		&cobra.Command{
-			Use:   "decrypt",
-			Short: "decrypt ciphertext using "+CipherName,
-			Args:  cobra.MaximumNArgs(1),
-			RunE: func(cmd *cobra.Command, args []string) error {
-				return runCaesar(options.Decrypt, parsedKey, input.In)
-			},
-		},
-	)
+	options.AddEncryptDecryptSubcommands(cmd, CipherName, func(cmd *cobra.Command, direction options.Direction, args []string) error {
+		return runCaesar(direction, parsedKey, input.In)
+	})
 
 	input.AddFlags(cmd.PersistentFlags())
 	key.AddFlags(cmd.PersistentFlags())
@@ -105,33 +91,10 @@ func runCaesar(direction options.Direction, key int, input io.Reader) (err error
 
 	var blockMode cipher.BlockMode
 	if direction == options.Decrypt {
-		blockMode = ecb.NewECBDecrypter(caesar.NewCipher(key))
+		blockMode = block.NewECBDecrypter(caesar.NewCipher(key))
 	} else {
-		blockMode = ecb.NewECBEncrypter(caesar.NewCipher(key))
+		blockMode = block.NewECBEncrypter(caesar.NewCipher(key))
 	}
 
-	var (
-		// combined encrypted/decrypted output
-		output = &bytes.Buffer{}
-		// buffer for reading and crypting blocks
-		buffer = make([]byte, blockMode.BlockSize())
-	)
-
-	for {
-		_, readErr := input.Read(buffer)
-		if readErr == io.EOF {
-			break
-		}
-
-		blockMode.CryptBlocks(buffer, buffer)
-
-		_, outputErr := output.Write(buffer)
-		if outputErr != nil {
-			return fmt.Errorf("failed building output: %w", outputErr)
-		}
-	}
-
-	fmt.Println(strings.TrimSuffix(output.String(), "\n"))
-
-	return nil
+	return block.CopyBlockMode(blockMode, os.Stdout, input)
 }
