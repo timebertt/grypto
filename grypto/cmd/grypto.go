@@ -17,16 +17,16 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/spf13/cobra"
+  "github.com/spf13/cobra"
 
-	"github.com/timebertt/grypto/grypto/cmd/caesar"
+  "github.com/timebertt/grypto/grypto/cmd/caesar"
 )
 
 func NewGryptoCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "grypto",
-		Short: "A collection of cryptographic algorithms implemented in go",
-		Long: `grypto is a collection of cryptographic algorithms implemented in go.
+  cmd := &cobra.Command{
+    Use:   "grypto",
+    Short: "A collection of cryptographic algorithms implemented in go",
+    Long: `grypto is a collection of cryptographic algorithms implemented in go.
 
 It was implemented by Tim Ebert as a practical exercise to understand the fundamental mathematical
 concepts behind cryptographic algorithms that were discussed in a lecture on cryptography in his
@@ -41,11 +41,11 @@ on correctness, security and quality of the implementation. The implementation m
 with proper implementations of the different algorithms and might be vulnerable to attacks. Please use
 the respective official implementations of the Go standard library (see https://golang.org/pkg/crypto/)
 for writing secure Go applications.`,
-	}
+  }
 
-	cmd.AddCommand(
-		caesar.NewCommand(),
-	)
+  cmd.AddCommand(
+    caesar.NewCommand(),
+  )
 
-	return cmd
+  return cmd
 }

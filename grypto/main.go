@@ -17,15 +17,15 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
-	"os"
+  "fmt"
+  "os"
 
-	"github.com/timebertt/grypto/grypto/cmd"
+  "github.com/timebertt/grypto/grypto/cmd"
 )
 
 func main() {
-	if err := cmd.NewGryptoCommand().Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+  if err := cmd.NewGryptoCommand().Execute(); err != nil {
+    fmt.Println(err)
+    os.Exit(1)
+  }
 }
