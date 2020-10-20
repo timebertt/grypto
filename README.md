@@ -36,6 +36,7 @@ Have fun! :tada:
 ## Algorithms implemented :gear:
 
 - [Caesar Cipher](/caesar) (`grypto caesar`)
+- [(Extended) Euclidean Algorithm](/euclid) (`grypto euclid`)
 
 More to come! :rocket:
 

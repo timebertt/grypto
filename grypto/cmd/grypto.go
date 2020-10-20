@@ -20,6 +20,7 @@ import (
   "github.com/spf13/cobra"
 
   "github.com/timebertt/grypto/grypto/cmd/caesar"
+  "github.com/timebertt/grypto/grypto/cmd/euclid"
 )
 
 func NewGryptoCommand() *cobra.Command {
@@ -45,6 +46,7 @@ for writing secure Go applications.`,
 
   cmd.AddCommand(
     caesar.NewCommand(),
+    euclid.NewCommand(),
   )
 
   return cmd
