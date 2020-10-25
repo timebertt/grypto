@@ -96,5 +96,6 @@ func runCaesar(direction options.Direction, key int, input io.Reader) (err error
     blockMode = block.NewECBEncrypter(caesar.NewCipher(key))
   }
 
-  return block.CopyBlockMode(blockMode, os.Stdout, input)
+  _, err = io.Copy(os.Stdout, block.NewBlockModeReader(blockMode, input))
+  return err
 }
