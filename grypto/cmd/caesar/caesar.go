@@ -3,6 +3,7 @@ package caesar
 import (
   "bytes"
   "crypto/cipher"
+  "crypto/des"
   "fmt"
   "io"
   "os"
@@ -95,6 +96,8 @@ func runCaesar(direction options.Direction, key int, input io.Reader) (err error
   } else {
     blockMode = block.NewECBEncrypter(caesar.NewCipher(key))
   }
+
+  des.NewCipher()
 
   _, err = io.Copy(os.Stdout, block.NewBlockModeReader(blockMode, input))
   return err
