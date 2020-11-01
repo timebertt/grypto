@@ -5,10 +5,10 @@ package des
 // This means a bitstring b1,b2,...,b64 will be permuted to b58,b50,b42,...,b7.
 // Here we define IP[i] as 64 - IP_Lit[i]. This is useful for straight-forward
 // implementations of the permutation, where we shift the input block for
-// every bit in the output string, so that we have the relevant input bit
-// at the index where it should be put in the output block.
-// Now, IP[63-i] gives us the number of shift left operations we have to do,
-// so that the input bit relevant for output bit i is at position i.
+// every bit, so that we have the input bit at the position where it should
+// be in the output block.
+// Now, IP[63-i]-i gives us the number of shift left operations we have to do,
+// so that the input bit i is at the correct position in the output block.
 var initialPermutation = [64]byte{
   6, 14, 22, 30, 38, 46, 54, 62,
   4, 12, 20, 28, 36, 44, 52, 60,
