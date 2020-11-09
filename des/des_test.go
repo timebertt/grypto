@@ -45,3 +45,22 @@ var _ = Describe("#permuteFinal", func() {
     Expect(permuteFinal(permuteInitial(block))).To(Equal(block))
   })
 })
+
+var _ = Describe("#validateKey", func() {
+  It("should return error, if key does not have a size of 8", func() {
+    Expect(validateKey([]byte{0, 1, 2, 3, 4, 5, 6})).To(MatchError(ContainSubstring("invalid key size")))
+    Expect(validateKey([]byte{0, 1, 2, 3, 4, 5, 6, 7, 8})).To(MatchError(ContainSubstring("invalid key size")))
+  })
+  It("should return error, if one bytes has even parity", func() {
+    Expect(validateKey([]byte{
+      0b11011100, 0b01110110, 0b11110100, 0b01011000,
+      0b11010110, 0b01111010, 0b10110101, 0b00001001,
+    })).To(MatchError(ContainSubstring("byte 7 has even parity")))
+  })
+  It("should succeed, if all bytes have odd parity", func() {
+    Expect(validateKey([]byte{
+      0b11011100, 0b01110110, 0b11110100, 0b01011000,
+      0b11010110, 0b01111010, 0b10110101, 0b00001000,
+    })).To(Succeed())
+  })
+})
