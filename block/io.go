@@ -29,7 +29,7 @@ func (b *reader) Read(p []byte) (int, error) {
   }
 
   // read one block from in
-  n, err := b.in.Read(p[:b.blockSize])
+  n, err := io.ReadFull(b.in, p[:b.blockSize])
   if err != nil {
     if err != io.EOF {
       return 0, err

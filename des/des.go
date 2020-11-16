@@ -100,26 +100,29 @@ func encrypt(key, dst, src []byte) {
     panic("grypto/des: output not full block")
   }
 
-  feistel(16, key, dst, src)
+  cryptBlock(key, dst, src)
 }
 
-func feistel(rounds int, key, dst, src []byte) {
+func cryptBlock(key, dst, src []byte) {
   b := binary.BigEndian.Uint64(src)
   b = permuteInitial(b)
   left, right := uint32(b>>32), uint32(b)
 
-  for i := 0; i < rounds; i++ {
-    left, right = right, left^f(right, key)
+  for i := 0; i < 16; i++ {
+    left, right = feistel(left, right, key)
   }
 
   b = uint64(left)<<32 | uint64(right)
   binary.BigEndian.PutUint64(dst, permuteFinal(b))
 }
 
-func f(in uint32, key []byte) uint32 {
+func feistel(left, right uint32, key []byte) (leftOut uint32, rightOut uint32) {
+  return right, left ^ f(key, right)
+}
+
+func f(key []byte, b uint32) uint32 {
 
 }
 
-func expand() {
-
+func expand(b uint32) uint64 {
 }

@@ -24,3 +24,9 @@ const (
   Encrypt = Direction(false)
   Decrypt = Direction(true)
 )
+
+func AddAllFlags(fs *pflag.FlagSet, opts ...Option) {
+  for _, opt := range opts {
+    opt.AddFlags(fs)
+  }
+}

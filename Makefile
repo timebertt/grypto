@@ -3,11 +3,11 @@
 # ==========================
 .PHONY: build
 build:
-	@GO111MOD=on go build -o bin/grypto ./grypto
+	@GO111MODULE=on go build -o bin/grypto ./grypto
 
 .PHONY: install
 install:
-	@GO111MOD=on go install ./grypto
+	@GO111MODULE=on go install ./grypto
 
 # ==========================
 # verification

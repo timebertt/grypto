@@ -5,7 +5,6 @@ import (
   "crypto/cipher"
   "fmt"
   "io"
-  "os"
   "strconv"
   "strings"
 
@@ -22,8 +21,9 @@ const (
 
 func NewCommand() *cobra.Command {
   var (
-    input = &options.Input{}
-    key   = &options.Key{}
+    input  = &options.Input{}
+    key    = &options.Key{}
+    output = &options.Output{}
 
     parsedKey int
   )
@@ -42,10 +42,13 @@ See: https://en.wikipedia.org/wiki/Caesar_cipher`,
       if err := key.Complete(cmd, args); err != nil {
         return err
       }
+      if err := output.Complete(cmd, args); err != nil {
+        return err
+      }
 
       keyInput := &bytes.Buffer{}
       if _, err := io.Copy(keyInput, key.In); err != nil {
-        return fmt.Errorf("error reading input: %w", err)
+        return fmt.Errorf("error reading key: %w", err)
       }
       if keyInput.Len() == 0 {
         return fmt.Errorf("given key is empty")
@@ -57,6 +60,8 @@ See: https://en.wikipedia.org/wiki/Caesar_cipher`,
         return fmt.Errorf("given key is not an int: %w", err)
       }
 
+      cmd.SilenceErrors = true
+      cmd.SilenceUsage = true
       return nil
     },
     PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
@@ -71,16 +76,19 @@ See: https://en.wikipedia.org/wiki/Caesar_cipher`,
   }
 
   options.AddEncryptDecryptSubcommands(cmd, CipherName, func(cmd *cobra.Command, direction options.Direction, args []string) error {
-    return runCaesar(direction, parsedKey, input.In)
+    return run(direction, parsedKey, input.In, output.Out)
   })
 
-  input.AddFlags(cmd.PersistentFlags())
-  key.AddFlags(cmd.PersistentFlags())
+  options.AddAllFlags(cmd.PersistentFlags(),
+    input,
+    output,
+    key,
+  )
 
   return cmd
 }
 
-func runCaesar(direction options.Direction, key int, input io.Reader) (err error) {
+func run(direction options.Direction, key int, in io.Reader, out io.Writer) (err error) {
   defer func() {
     if p := recover(); p != nil {
       if e, ok := p.(error); ok {
@@ -96,6 +104,10 @@ func runCaesar(direction options.Direction, key int, input io.Reader) (err error
     blockMode = block.NewECBEncrypter(caesar.NewCipher(key))
   }
 
-  _, err = io.Copy(os.Stdout, block.NewBlockModeReader(blockMode, input))
-  return err
+  _, err = io.Copy(out, block.NewBlockModeReader(blockMode, in))
+  if err != nil {
+    return fmt.Errorf("error crypting with %s: %w", CipherName, err)
+  }
+
+  return nil
 }
