@@ -67,7 +67,12 @@ func runEuclid(a, b int) (err error) {
   fmt.Printf("gcd(%d,%d) = %d = %s*%d + %s*%d\n", a, b, gcd, parenthesis(x), a, parenthesis(y), b)
 
   if gcd == 1 {
-    fmt.Printf("=> %d%s %s %d mod %d\n", b, unicode.SuperscriptMinusOne, unicode.IdenticalTo, y, a)
+    inv := y
+    if inv < 0 {
+      inv += a // normalize inverse, y might be negative
+    }
+
+    fmt.Printf("=> %d%s %s %d mod %d\n", b, unicode.SuperscriptMinusOne, unicode.IdenticalTo, inv, a)
   }
 
   return nil
