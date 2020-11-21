@@ -31,12 +31,18 @@ $ grypto caesar encrypt -K 3 -I "Caesar Cipher is old but not very secure"
 Fdhvdu Flskhu lv rog exw qrw yhub vhfxuh
 ```
 
+See what else is possible with grypto:
+```
+$ grypto help
+```
+
 Have fun! :tada:
 
 ## Algorithms implemented :gear:
 
 - [Caesar Cipher](/caesar) (`grypto caesar`)
 - [(Extended) Euclidean Algorithm](/euclid) (`grypto euclid`)
+- [Modular Exponentiation](/modular/exponentiation.go) (`grypto exp`)
 
 More to come! :rocket:
 
