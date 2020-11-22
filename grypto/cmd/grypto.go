@@ -20,6 +20,7 @@ import (
   "github.com/spf13/cobra"
 
   "github.com/timebertt/grypto/grypto/cmd/caesar"
+  "github.com/timebertt/grypto/grypto/cmd/dlog"
   "github.com/timebertt/grypto/grypto/cmd/euclid"
   "github.com/timebertt/grypto/grypto/cmd/exp"
   "github.com/timebertt/grypto/grypto/cmd/order"
@@ -49,6 +50,7 @@ for writing secure Go applications.`,
 
   cmd.AddCommand(
     caesar.NewCommand(),
+    dlog.NewCommand(),
     exp.NewCommand(),
     euclid.NewCommand(),
     order.NewCommand(),

@@ -58,6 +58,9 @@ See https://en.wikipedia.org/wiki/Exponentiation_by_squaring.`,
       }
       mod = int32(m)
 
+      cmd.SilenceErrors = true
+      cmd.SilenceUsage = true
+
       return nil
     },
     RunE: func(cmd *cobra.Command, args []string) error {

@@ -40,6 +40,9 @@ See: https://en.wikipedia.org/wiki/Euclidean_algorithm, https://en.wikipedia.org
         return fmt.Errorf("second argument is not an int: %w", err)
       }
 
+      cmd.SilenceErrors = true
+      cmd.SilenceUsage = true
+
       return nil
     },
     RunE: func(cmd *cobra.Command, args []string) error {

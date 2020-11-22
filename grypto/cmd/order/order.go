@@ -43,6 +43,9 @@ See https://en.wikipedia.org/wiki/Order_(group_theory)`,
       }
       mod = int32(m)
 
+      cmd.SilenceErrors = true
+      cmd.SilenceUsage = true
+
       return nil
     },
     RunE: func(cmd *cobra.Command, args []string) error {

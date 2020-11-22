@@ -57,6 +57,9 @@ See: https://en.wikipedia.org/wiki/Caesar_cipher`,
         return fmt.Errorf("given key is not an int: %w", err)
       }
 
+      cmd.SilenceErrors = true
+      cmd.SilenceUsage = true
+
       return nil
     },
     PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
