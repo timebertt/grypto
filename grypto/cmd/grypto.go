@@ -22,6 +22,8 @@ import (
   "github.com/timebertt/grypto/grypto/cmd/caesar"
   "github.com/timebertt/grypto/grypto/cmd/euclid"
   "github.com/timebertt/grypto/grypto/cmd/exp"
+  "github.com/timebertt/grypto/grypto/cmd/order"
+  "github.com/timebertt/grypto/grypto/cmd/subgroup"
 )
 
 func NewGryptoCommand() *cobra.Command {
@@ -49,6 +51,8 @@ for writing secure Go applications.`,
     caesar.NewCommand(),
     exp.NewCommand(),
     euclid.NewCommand(),
+    order.NewCommand(),
+    subgroup.NewCommand(),
   )
 
   return cmd

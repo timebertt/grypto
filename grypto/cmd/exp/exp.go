@@ -53,7 +53,7 @@ See https://en.wikipedia.org/wiki/Exponentiation_by_squaring.`,
       if err != nil {
         return fmt.Errorf("third argument is not an int: %w", err)
       }
-      if e > math.MaxInt32 {
+      if m > math.MaxInt32 {
         return fmt.Errorf("modulus is greater than MaxInt32 (%d): %d", math.MaxInt32, b)
       }
       mod = int32(m)
