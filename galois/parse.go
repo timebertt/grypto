@@ -179,3 +179,12 @@ func (p *Polynomial) Normalize() Polynomial {
   *p = (*p)[:degree+1]
   return *p
 }
+
+func (p Polynomial) IsZero() bool {
+  for _, c := range p {
+    if c > 0 {
+      return true
+    }
+  }
+  return false
+}

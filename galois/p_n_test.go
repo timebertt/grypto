@@ -51,7 +51,7 @@ var _ = Describe("Element", func() {
   )
 
   BeforeEach(func() {
-    field = galois.MustNewField(5,2, "3x^2 + 4x + 1")
+    field = galois.MustNewField(5, 2, "3x^2 + 4x + 1")
   })
 
   Describe("#Add", func() {
@@ -71,6 +71,27 @@ var _ = Describe("Element", func() {
       test("2x+1", "3x+1", "2")
       test("2x^2+3", "4x+5", "2x^2 + 4x + 8")
       test("2x^2+3", "4x^2+5", "1x^2 + 0x + 3")
+    })
+  })
+
+  Describe("#Sub()", func() {
+    It("should correctly calculate sum", func() {
+      test := func(p, q, expected string) {
+        pp := field.MustParseElement(p)
+        qq := field.MustParseElement(q)
+        e := field.MustParseElement(expected)
+        ExpectWithOffset(1, pp.Sub(qq)).To(Equal(e), "should be equal to "+e.String())
+      }
+
+      test("0", "0", "0")
+      test("1", "0", "1")
+      test("4", "2", "2")
+      test("3x+1", "0", "3x+1")
+      test("3x+1", "1", "3x")
+      test("3x+1", "2x+1", "1x")
+      test("x+1", "2x+1", "4x")
+      test("4x+5", "2x^2+3", "3x^2 + 4x + 2")
+      test("x^2+1", "4x^2+3", "2x^2 + 3")
     })
   })
 

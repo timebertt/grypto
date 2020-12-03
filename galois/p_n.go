@@ -3,6 +3,8 @@ package galois
 import (
   "fmt"
   "reflect"
+
+  "github.com/timebertt/grypto/euclid"
 )
 
 type Field struct {
@@ -10,7 +12,7 @@ type Field struct {
   Modulus Polynomial
 }
 
-func (f *Field) Null() Element {
+func (f *Field) Zero() Element {
   return Element{Polynomial{0}, f}
 }
 
@@ -25,6 +27,10 @@ func (f *Field) NewElement(p Polynomial) (Element, error) {
 }
 
 type Polynomial []int32
+
+func (p Polynomial) Copy() Polynomial {
+  return append(p[:0:0], p...)
+}
 
 func (p Polynomial) String() string {
   s := ""
@@ -84,12 +90,30 @@ type Element struct {
   Field *Field
 }
 
+func (p Element) Copy() Element {
+  return Element{p.Polynomial.Copy(), p.Field}
+}
+
 func (p Element) Add(q Element) Element {
   if p.Field != q.Field && reflect.DeepEqual(p.Field, q.Field) {
     panic("grypto/galois: p and q are not element of the same field")
   }
 
-  return Element{p.Polynomial.Add(q.Polynomial), p.Field}.Modulo(q.Field.Modulus)
+  sum := Element{p.Polynomial.Add(q.Polynomial), p.Field}
+  return sum.Normalize()
+}
+
+func (p Element) Sub(q Element) Element {
+  if p.Field != q.Field && reflect.DeepEqual(p.Field, q.Field) {
+    panic("grypto/galois: p and q are not element of the same field")
+  }
+
+  qq := q.Copy()
+  for i := range qq.Polynomial {
+    qq.Polynomial[i] = -qq.Polynomial[i]
+  }
+
+  return p.Add(qq.Normalize())
 }
 
 func (p Element) Multiply(q Element) Element {
@@ -97,7 +121,8 @@ func (p Element) Multiply(q Element) Element {
     panic("grypto/galois: p and q are not element of the same field")
   }
 
-  return Element{p.Polynomial.Multiply(q.Polynomial), p.Field}.Modulo(q.Field.Modulus)
+  product := Element{p.Polynomial.Multiply(q.Polynomial), p.Field}
+  return product.Normalize()
 }
 
 func (p Element) String() string {
@@ -105,7 +130,32 @@ func (p Element) String() string {
 }
 
 func (p Element) Divide(q Polynomial) (quotient Element, residue Element) {
-  return p, p.Field.Null()
+  pp := p.Polynomial.Copy()
+  pp.Normalize()
+  qq := q.Copy()
+  qq.Normalize()
+
+  if qq.IsZero() {
+    panic("grypto/galois: cannot divide by zero")
+  }
+  if pp.Degree() > qq.Degree() {
+    panic("grypto/galois: cannot divide by a polynomial with a smaller degree")
+  }
+
+  s := make(Polynomial, pp.Degree()-qq.Degree()+1)
+  r := make(Polynomial, pp.Degree()-qq.Degree()+1)
+
+  j := pp.Degree()
+  k := s.Degree()
+  for i := qq.Degree(); i >= 0; i-- {
+    r[i] += pp[j]
+    _, _, rc := euclid.GreatestCommonDivisorExtended(int(r[i]), int(pp[j]))
+    s[k] = int32(rc) * pp[j]
+  }
+
+  quotient = Element{s, p.Field}
+  residue = Element{r, p.Field}
+  return quotient.Normalize(), residue.Normalize()
 }
 
 func (p Element) Modulo(q Polynomial) Element {
