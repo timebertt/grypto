@@ -38,6 +38,16 @@ type Monomial struct {
   Power       int32
 }
 
+func (m Monomial) ToPolynomial() Polynomial {
+  p := make(Polynomial, m.Power+1)
+  p[m.Power] = m.Coefficient
+  return p
+}
+
+func (m Monomial) String() string {
+  return m.ToPolynomial().String()
+}
+
 var monomialRegex = regexp.MustCompile(`^(-?[0-9]*)\*?(x)?(\^[0-9]*)?$`)
 
 func MustParseMonomial(s string) Monomial {
@@ -168,13 +178,9 @@ func (p *Element) Normalize() Element {
 }
 
 func (p *Polynomial) Normalize() Polynomial {
-  if p.Degree() == 0 {
-    return *p
-  }
-
-  degree := p.Degree()
+  degree := len(*p) - 1
   for degree > 0 {
-    if (*p)[degree] > 0 {
+    if (*p)[degree] != 0 {
       break
     }
     degree--
