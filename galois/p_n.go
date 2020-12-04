@@ -12,14 +12,37 @@ type Field struct {
   Modulus Polynomial
 }
 
+func Zero() Polynomial {
+  return Polynomial{0}
+}
+
+func One() Polynomial {
+  return Polynomial{1}
+}
+
 func (f *Field) Zero() Element {
-  return Element{Polynomial{0}, f}
+  return f.uncheckedElement(Zero())
+}
+
+func (f *Field) One() Element {
+  return f.uncheckedElement(One())
+}
+
+func (f *Field) uncheckedElement(p Polynomial) Element {
+  e := Element{p, f}
+  return e.Normalize()
+}
+
+func (f *Field) MustNewElement(p Polynomial) Element {
+  e, err := f.NewElement(p)
+  if err != nil {
+    panic(fmt.Errorf("grypto/galois: not a valid element: %v", err))
+  }
+  return e
 }
 
 func (f *Field) NewElement(p Polynomial) (Element, error) {
-  e := Element{p, f}
-  e.Normalize()
-
+  e := f.uncheckedElement(p)
   if p.Degree() > f.N {
     return Element{}, fmt.Errorf("degree of polynomial is larger than field's N")
   }
@@ -34,14 +57,31 @@ func (p Polynomial) Copy() Polynomial {
 
 func (p Polynomial) String() string {
   s := ""
+  printCoefficient := func(i int32, leaveOutOne bool) string {
+    switch {
+    case leaveOutOne && i == 1:
+      return "+ "
+    case leaveOutOne && i == -1:
+      return "- "
+    case i < 0:
+      return fmt.Sprintf("- %d", -i)
+    }
+    return fmt.Sprintf("+ %d", i)
+  }
+
   for i := len(p) - 1; i >= 0; i-- {
+    c := p[i]
+
+    if c == 0 {
+      continue
+    }
     switch i {
     case 0:
-      s += fmt.Sprintf(" + %d", p[i])
+      s += fmt.Sprintf(" %s", printCoefficient(c, false))
     case 1:
-      s += fmt.Sprintf(" + %dx", p[i])
+      s += fmt.Sprintf(" %sx", printCoefficient(c, true))
     default:
-      s += fmt.Sprintf(" + %dx^%d", p[i], i)
+      s += fmt.Sprintf(" %sx^%d", printCoefficient(c, true), i)
     }
   }
   if len(s) == 0 {
@@ -52,6 +92,15 @@ func (p Polynomial) String() string {
 
 func (p Polynomial) Degree() int32 {
   return int32(len(p) - 1)
+}
+
+func (p Polynomial) Lead() int32 {
+  for i := p.Degree(); i >= 0; i-- {
+    if p[i] != 0 {
+      return p[i]
+    }
+  }
+  return 0
 }
 
 func (p Polynomial) Add(q Polynomial) Polynomial {
@@ -85,13 +134,50 @@ func (p Polynomial) Multiply(q Polynomial) Polynomial {
   return r
 }
 
+func (p Polynomial) Divide(q Polynomial) (quotient Polynomial, residue Polynomial) {
+  if q.IsOne() {
+    return q.Normalize(), Zero()
+  }
+
+  p = p.Copy()
+  p.Normalize()
+  q = q.Copy()
+  q.Normalize()
+
+  if q.IsZero() {
+    panic("grypto/galois: cannot divide by zero")
+  }
+  if p.Degree() > q.Degree() {
+    panic("grypto/galois: cannot divide by a polynomial with a smaller degree")
+  }
+
+  quotient = make(Polynomial, p.Degree()-q.Degree()+1)
+  residue = p.Copy()
+
+  var j int32
+  k := quotient.Degree()
+  for i := q.Degree(); i >= 0; i-- {
+    j = residue.Degree()
+    _, _, rc := euclid.GreatestCommonDivisorExtended(int(residue[i]), int(p[j]))
+    quotient[k] = int32(rc) * p[j]
+  }
+
+  return quotient.Normalize(), residue.Normalize()
+}
+
+func (p Polynomial) Modulo(q Polynomial) Polynomial {
+  // _, r := p.Divide(q)
+  // return r
+  return p.Normalize()
+}
+
 type Element struct {
   Polynomial
   Field *Field
 }
 
 func (p Element) Copy() Element {
-  return Element{p.Polynomial.Copy(), p.Field}
+  return p.Field.uncheckedElement(p.Polynomial.Copy())
 }
 
 func (p Element) Add(q Element) Element {
@@ -99,8 +185,7 @@ func (p Element) Add(q Element) Element {
     panic("grypto/galois: p and q are not element of the same field")
   }
 
-  sum := Element{p.Polynomial.Add(q.Polynomial), p.Field}
-  return sum.Normalize()
+  return p.Field.uncheckedElement(p.Polynomial.Add(q.Polynomial))
 }
 
 func (p Element) Sub(q Element) Element {
@@ -108,12 +193,12 @@ func (p Element) Sub(q Element) Element {
     panic("grypto/galois: p and q are not element of the same field")
   }
 
-  qq := q.Copy()
-  for i := range qq.Polynomial {
-    qq.Polynomial[i] = -qq.Polynomial[i]
+  q = q.Copy()
+  for i := range q.Polynomial {
+    q.Polynomial[i] = -q.Polynomial[i]
   }
 
-  return p.Add(qq.Normalize())
+  return p.Add(q.Normalize())
 }
 
 func (p Element) Multiply(q Element) Element {
@@ -121,45 +206,9 @@ func (p Element) Multiply(q Element) Element {
     panic("grypto/galois: p and q are not element of the same field")
   }
 
-  product := Element{p.Polynomial.Multiply(q.Polynomial), p.Field}
-  return product.Normalize()
+  return p.Field.uncheckedElement(p.Polynomial.Multiply(q.Polynomial))
 }
 
 func (p Element) String() string {
   return p.Polynomial.String()
-}
-
-func (p Element) Divide(q Polynomial) (quotient Element, residue Element) {
-  pp := p.Polynomial.Copy()
-  pp.Normalize()
-  qq := q.Copy()
-  qq.Normalize()
-
-  if qq.IsZero() {
-    panic("grypto/galois: cannot divide by zero")
-  }
-  if pp.Degree() > qq.Degree() {
-    panic("grypto/galois: cannot divide by a polynomial with a smaller degree")
-  }
-
-  s := make(Polynomial, pp.Degree()-qq.Degree()+1)
-  r := make(Polynomial, pp.Degree()-qq.Degree()+1)
-
-  j := pp.Degree()
-  k := s.Degree()
-  for i := qq.Degree(); i >= 0; i-- {
-    r[i] += pp[j]
-    _, _, rc := euclid.GreatestCommonDivisorExtended(int(r[i]), int(pp[j]))
-    s[k] = int32(rc) * pp[j]
-  }
-
-  quotient = Element{s, p.Field}
-  residue = Element{r, p.Field}
-  return quotient.Normalize(), residue.Normalize()
-}
-
-func (p Element) Modulo(q Polynomial) Element {
-  // _, r := p.Divide(q)
-  // return r
-  return p.Normalize()
 }

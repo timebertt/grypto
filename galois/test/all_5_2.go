@@ -7,11 +7,13 @@ import (
 )
 
 func main() {
-  var all []galois.Polynomial
+  f := galois.MustNewField(5, 2, "x^2 + 2")
+
+  var all []galois.Element
 
   for i := int32(0); i < 5; i++ {
     for j := int32(0); j < 5; j++ {
-      all = append(all, galois.Polynomial{i, j})
+      all = append(all, f.MustNewElement(galois.Polynomial{i, j}))
     }
   }
 

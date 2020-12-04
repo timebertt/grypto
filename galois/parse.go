@@ -38,7 +38,7 @@ type Monomial struct {
   Power       int32
 }
 
-var monomialRegex = regexp.MustCompile(`^([0-9]*)\*?(x)?(\^[0-9]*)?$`)
+var monomialRegex = regexp.MustCompile(`^(-?[0-9]*)\*?(x)?(\^[0-9]*)?$`)
 
 func MustParseMonomial(s string) Monomial {
   m, err := ParseMonomial(s)
@@ -60,6 +60,8 @@ func ParseMonomial(s string) (Monomial, error) {
   coefficient := matches[1]
   if coefficient == "" {
     m.Coefficient = 1
+  } else if coefficient == "-" {
+    m.Coefficient = -1
   } else {
     c, err := strconv.Atoi(coefficient)
     if err != nil {
@@ -109,7 +111,9 @@ func ParsePolynomial(s string) (Polynomial, error) {
     degree       = int32(0)
   )
 
-  for i, part := range strings.Split(strings.ReplaceAll(s, " ", ""), "+") {
+  s = strings.ReplaceAll(s, " ", "")
+  s = strings.ReplaceAll(s, "-", "+-")
+  for i, part := range strings.Split(s, "+") {
     m, err := ParseMonomial(part)
     if err != nil {
       return nil, fmt.Errorf("failed to parse part %d as monomial: %w", i, err)
@@ -182,9 +186,21 @@ func (p *Polynomial) Normalize() Polynomial {
 
 func (p Polynomial) IsZero() bool {
   for _, c := range p {
-    if c > 0 {
-      return true
+    if c != 0 {
+      return false
     }
   }
-  return false
+  return true
+}
+
+func (p Polynomial) IsOne() bool {
+  if p[0] != 1 {
+    return false
+  }
+  for _, c := range p[1:] {
+    if c != 0 {
+      return false
+    }
+  }
+  return true
 }
