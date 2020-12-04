@@ -2,13 +2,14 @@ package galois
 
 import (
   "fmt"
+  "math"
   "reflect"
   "strings"
 )
 
 type Field struct {
   P, N    int32
-  Modulus Polynomial
+  Modulus Element
 }
 
 func Zero() Polynomial {
@@ -38,6 +39,10 @@ func (f *Field) MustNewElement(p Polynomial) Element {
     panic(fmt.Errorf("grypto/galois: not a valid element: %v", err))
   }
   return e
+}
+
+func (f *Field) Order() int32 {
+  return int32(math.Pow(float64(f.P), float64(f.N)))
 }
 
 func (f *Field) NewElement(p Polynomial) (Element, error) {
@@ -141,6 +146,10 @@ func (p Polynomial) Sub(q Polynomial) Polynomial {
 }
 
 func (p Polynomial) Multiply(q Polynomial) Polynomial {
+  if p.IsZero() || q.IsZero() {
+    return Zero()
+  }
+
   // result polynomial: deg r = deg p + deg q
   r := make(Polynomial, p.Degree()+q.Degree()+1)
   for i, pi := range p {
@@ -225,7 +234,22 @@ func (p Element) Multiply(q Element) Element {
     panic("grypto/galois: p and q are not element of the same field")
   }
 
-  return p.Field.uncheckedElement(p.Polynomial.Multiply(q.Polynomial).Modulo(p.Field.Modulus))
+  return p.Field.uncheckedElement(p.Polynomial.Multiply(q.Polynomial).Modulo(p.Field.Modulus.Polynomial)).Normalize()
+}
+
+func (p Element) Order() int32 {
+  if p.IsZero() {
+    return -1
+  }
+
+  exp := p.Field.One()
+  for i := int32(1); i <= p.Field.Order(); i++ {
+    exp = exp.Multiply(p)
+    if exp.IsOne() {
+      return i
+    }
+  }
+  return -1
 }
 
 func (p Element) String() string {

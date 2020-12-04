@@ -22,13 +22,13 @@ func NewField(p, n int32, modulus string) (*Field, error) {
     return nil, fmt.Errorf("modulus not a valid polynomial: %w", err)
   }
   f := &Field{
-    P:       p,
-    N:       n,
-    Modulus: m,
+    P: p,
+    N: n,
   }
-  f.NormalizePolynomial(&f.Modulus)
-  if m.Degree() != n {
-    return nil, fmt.Errorf("degree of modulus must be equal to field's n, but is %d", m.Degree())
+  f.Modulus = Element{Polynomial: m, Field: f}
+  f.Modulus.Normalize()
+  if f.Modulus.Degree() != n {
+    return nil, fmt.Errorf("degree of modulus must be equal to field's n, but is %d", f.Modulus.Degree())
   }
   return f, nil
 }
@@ -162,19 +162,12 @@ func (f *Field) MustParseElement(s string) Element {
   return e
 }
 
-func (f *Field) NormalizePolynomial(p *Polynomial) {
-  for i, c := range *p {
-    (*p)[i] = (c + f.P) % f.P
-  }
-  p.Normalize()
-}
-
-func (p *Element) Normalize() Element {
+func (p Element) Normalize() Element {
   for i, c := range p.Polynomial {
     p.Polynomial[i] = (c + p.Field.P) % p.Field.P
   }
   p.Polynomial.Normalize()
-  return *p
+  return p
 }
 
 func (p *Polynomial) Normalize() Polynomial {
