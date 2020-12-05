@@ -1,0 +1,5 @@
+package aes
+
+func NewCipher() {
+
+}
