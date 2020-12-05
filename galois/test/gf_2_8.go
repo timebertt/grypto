@@ -7,12 +7,29 @@ import (
 )
 
 func main() {
-  f := galois.MustNewField(2, 8, "x^8 + x^4 + x^3 + x + 1")
+  f := galois.AESField
 
-  _a3 := f.MustNewElement(galois.Polynomial{1,1,0,0,0,1,0,1})
-  _44 := f.MustNewElement(galois.Polynomial{0,0,1,0,0,0,1,0})
-  fmt.Println(_a3.Add(_44))
+  a := f.MustParseElementHex("a3")
+  fmt.Println(a)
+  fmt.Println(a.HexString())
+  b := f.MustParseElementHex("44")
+  fmt.Println(b)
+  fmt.Println(b.HexString())
+  fmt.Println(a.Add(b))
+  fmt.Println(a.Add(b).HexString())
 
-  _c2 := f.MustNewElement(galois.Polynomial{0,1,0,0,0,0,1,1})
-  fmt.Println(_c2.Inverse())
+  a = f.MustParseElementHex("12")
+  fmt.Println(a)
+  fmt.Println(a.HexString())
+  b = f.MustParseElementHex("f9")
+  fmt.Println(b)
+  fmt.Println(b.HexString())
+  fmt.Println(a.Add(b))
+  fmt.Println(a.Add(b).HexString())
+
+  c := f.MustParseElementHex("c2")
+  fmt.Println(c)
+  fmt.Println(c.Inverse())
+  fmt.Println(c.Inverse().HexString())
+  fmt.Println(c.Inverse().Inverse().HexString())
 }

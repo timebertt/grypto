@@ -1,6 +1,7 @@
 package galois
 
 import (
+  "encoding/hex"
   "fmt"
   "math"
   "regexp"
@@ -146,6 +147,40 @@ func ParsePolynomial(s string) (Polynomial, error) {
   return polynomial, nil
 }
 
+func MustParsePolynomialHex(s string) Polynomial {
+  p, err := ParsePolynomialHex(s)
+  if err != nil {
+    panic(fmt.Errorf("grypto/galois: not a valid polynomial: %v", err))
+  }
+  return p
+}
+
+func ParsePolynomialHex(s string) (Polynomial, error) {
+  if len(s) == 0 {
+    return Zero(), nil
+  }
+  if len(s)%2 != 0 {
+    return nil, fmt.Errorf("can only parse polynomials with even number of hex digits")
+  }
+
+  bytes, err := hex.DecodeString(s)
+  if err != nil {
+    return nil, fmt.Errorf("error decoding hex string: %w", err)
+  }
+
+  p := make(Polynomial, len(s)*4)
+  for i, b := range bytes {
+    bit := byte(1)
+    for j := 0; j < 8; j++ {
+      if b&bit == bit {
+        p[i*8+j] = int32(1)
+      }
+      bit <<= 1
+    }
+  }
+  return p.Normalize(), nil
+}
+
 func (f *Field) ParseElement(s string) (Element, error) {
   p, err := ParsePolynomial(s)
   if err != nil {
@@ -154,8 +189,24 @@ func (f *Field) ParseElement(s string) (Element, error) {
   return f.NewElement(p)
 }
 
+func (f *Field) ParseElementHex(s string) (Element, error) {
+  p, err := ParsePolynomialHex(s)
+  if err != nil {
+    return Element{}, fmt.Errorf("not a valid polynomial: %w", err)
+  }
+  return f.NewElement(p)
+}
+
 func (f *Field) MustParseElement(s string) Element {
   e, err := f.ParseElement(s)
+  if err != nil {
+    panic(fmt.Errorf("grypto/galois: not a valid polynomial: %v", err))
+  }
+  return e
+}
+
+func (f *Field) MustParseElementHex(s string) Element {
+  e, err := f.ParseElementHex(s)
   if err != nil {
     panic(fmt.Errorf("grypto/galois: not a valid polynomial: %v", err))
   }

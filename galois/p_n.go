@@ -1,6 +1,7 @@
 package galois
 
 import (
+  "encoding/hex"
   "fmt"
   "math"
   "reflect"
@@ -8,6 +9,8 @@ import (
 
   "github.com/timebertt/grypto/euclid"
 )
+
+var AESField = MustNewField(2, 8, "x^8 + x^4 + x^3 + x + 1")
 
 type Field struct {
   P, N    int32
@@ -170,6 +173,18 @@ type Element struct {
 
 func (p Element) String() string {
   return p.Polynomial.String()
+}
+
+func (p Element) HexString() string {
+  if p.Field.P != 2 || p.Field.N != 8 {
+    panic("grypto/galois: HexString is only supported for elements of GF(2^8)")
+  }
+
+  var b byte
+  for i, c := range p.Polynomial {
+    b |= byte(c) << i
+  }
+  return hex.EncodeToString([]byte{b})
 }
 
 func (p Element) Copy() Element {
