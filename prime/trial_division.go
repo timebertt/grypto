@@ -15,8 +15,7 @@ func IsPrimeTrialDivision32(p int32) (isPrime bool) {
     return false
   }
 
-  f := float64(p)
-  for i := int32(2); i <= int32(math.Sqrt(f)); i++ {
+  for i := int32(2); i <= int32(math.Sqrt(float64(p))); i++ {
     if p%i == 0 {
       return false
     }
