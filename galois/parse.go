@@ -156,6 +156,7 @@ func MustParsePolynomialHex(s string) Polynomial {
 }
 
 func ParsePolynomialHex(s string) (Polynomial, error) {
+  s = strings.TrimPrefix(s, "0x")
   if len(s) == 0 {
     return Zero(), nil
   }

@@ -184,7 +184,7 @@ func (p Element) HexString() string {
   for i, c := range p.Polynomial {
     b |= byte(c) << i
   }
-  return hex.EncodeToString([]byte{b})
+  return "0x" + hex.EncodeToString([]byte{b})
 }
 
 func (p Element) Copy() Element {
